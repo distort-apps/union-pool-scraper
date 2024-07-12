@@ -138,10 +138,30 @@ const scrapeEventDetails = async (page: Page, link: string): Promise<EventDetail
     }
 
     try {
-      price = await page.$eval('div.EventDetailsCallToAction__PriceRow-sc-3e9a4f58-1 span', (el: Element) => el?.textContent?.trim() || '');
+      price = await page.$eval(
+        'div.EventDetailsCallToAction__Price-sc-5d0ca115-6 span',
+        el => {
+          const match = el.textContent?.trim().match(/\$\d+\.\d{2}/);
+          return match ? match[0] : 'not sure';
+        }
+      );
     } catch (err) {
-      console.error(`Error finding price: `, err);
+      console.log("did not find price on " + link);
     }
+    
+    try {
+      price = await page.$eval(
+        'div.EventDetailsCallToAction__Price-sc-5d0ca115-6',
+        el => {
+          const match = el.textContent?.trim().match(/\$\d+\.\d{2}/);
+          return match ? match[0] : 'not sure';
+        }
+      );
+    } catch (err) {
+      console.log(`Error 2nd finding price on ${link}: `, err);
+      price = 'not sure';
+    }
+
 
     try {
       image = await page.$eval('img.EventDetailsImage__Image-sc-869461fe-1', (el: Element) => (el as HTMLImageElement).src);
